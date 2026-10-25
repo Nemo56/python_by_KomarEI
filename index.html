@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Мосты и перекрытия</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=PT+Sans+Narrow:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #EEF3F1; --sheet: #F7FAF8; --grid: #D3E1E5; --gridMajor: #B3CAD3;
+  --ink: #1C2B46; --inkSoft: #5A6B82; --tension: #1F63D6; --compress: #D23A2A;
+  --wood: #B9864A; --steel: #6F7E92; --road: #3B4049; --rope: #7B5E3C; --stone: #978E80;
+  --water: #A9CFE8; --ground: #1C2B46; --danger: #D23A2A; --ok: #2E8B57; --star: #E5A31A;
+  --btn: #FFFFFF; --btnLine: #9FB3C2;
+  color-scheme: light;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0E1E2D; --sheet: #112437; --grid: #1A344B; --gridMajor: #24486A;
+    --ink: #DCE8F2; --inkSoft: #8FA6BD; --tension: #5B9BFF; --compress: #FF6B57;
+    --wood: #D7A66C; --steel: #A4B3C4; --road: #B8BFC8; --rope: #C79A64; --stone: #B9AF9F;
+    --water: #1F4B6E; --ground: #8FA6BD; --danger: #FF6B57; --ok: #4CC38A; --star: #F2B738;
+    --btn: #15293D; --btnLine: #33536F;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0E1E2D; --sheet: #112437; --grid: #1A344B; --gridMajor: #24486A;
+  --ink: #DCE8F2; --inkSoft: #8FA6BD; --tension: #5B9BFF; --compress: #FF6B57;
+  --wood: #D7A66C; --steel: #A4B3C4; --road: #B8BFC8; --rope: #C79A64; --stone: #B9AF9F;
+  --water: #1F4B6E; --ground: #8FA6BD; --danger: #FF6B57; --ok: #4CC38A; --star: #F2B738;
+  --btn: #15293D; --btnLine: #33536F;
+  color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: inherit; }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); height: 100%; }
+body {
+  margin: 0; height: 100%; background: var(--paper); color: var(--ink);
+  font-family: 'PT Sans Narrow', 'Arial Narrow', 'Roboto Condensed', sans-serif;
+  font-size: 18px; line-height: 1.35;
+}
+#app { height: 100%; display: grid; grid-template-rows: auto 1fr; }
+header {
+  display: flex; align-items: center; gap: 14px; padding: 10px 16px 8px;
+  border-bottom: 2px solid var(--ink);
+}
+header h1 { font-size: 26px; margin: 0; font-weight: 700; letter-spacing: 0.01em; }
+header .task { margin: 0; color: var(--inkSoft); max-width: 70ch; font-size: 17px; }
+header .titles { flex: 1; min-width: 0; }
+.hstars { font-size: 22px; color: var(--star); white-space: nowrap; }
+.hstars .off { color: var(--gridMajor); }
+main { display: grid; grid-template-columns: 1fr 270px; min-height: 0; }
+#stage { position: relative; min-height: 0; }
+#cv { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; cursor: crosshair; display: block; }
+aside {
+  border-left: 2px solid var(--ink); padding: 12px 14px; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 12px; background: var(--sheet);
+}
+aside h2 { font-size: 17px; margin: 0 0 6px; color: var(--inkSoft); font-weight: 400; }
+button {
+  font: inherit; color: var(--ink); background: var(--btn); border: 1.5px solid var(--btnLine);
+  border-radius: 6px; padding: 8px 10px; cursor: pointer; min-height: 44px;
+}
+button:hover { border-color: var(--ink); }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--tension); outline-offset: 2px; }
+button[aria-pressed="true"] { border: 2px solid var(--ink); box-shadow: inset 0 0 0 2px var(--sheet), inset 0 0 0 4px var(--ink); }
+.mats { display: grid; gap: 6px; }
+.mat { display: grid; grid-template-columns: 34px 1fr auto; align-items: center; gap: 8px; text-align: left; }
+.mat .sw { height: 10px; border-radius: 2px; }
+.mat .price { color: var(--inkSoft); font-size: 15px; white-space: nowrap; }
+.tools { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.tools button, .speed button { white-space: nowrap; padding: 8px 4px; }
+.rule { margin: 0; font-size: 15px; color: var(--inkSoft); }
+.primary {
+  background: var(--ink); color: var(--sheet); border-color: var(--ink); font-weight: 700; font-size: 21px; padding: 12px;
+}
+.primary:hover { filter: brightness(1.15); }
+.speed { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.legend { display: grid; gap: 6px; font-size: 16px; }
+.legend div { display: flex; align-items: center; gap: 8px; }
+.legend i { display: inline-block; width: 34px; height: 9px; border-radius: 2px; flex: none; }
+.legend .bendchip { background: var(--wood); height: 12px; border-top: 3px solid var(--compress); border-bottom: 3px solid var(--tension); }
+.readout { font-size: 17px; margin: 0; }
+.readout b { font-size: 20px; }
+input[type=range] { width: 100%; accent-color: var(--ink); }
+.stamp {
+  position: absolute; right: 18px; bottom: 18px; background: var(--sheet); border: 2px solid var(--ink);
+  font-size: 15px; pointer-events: none; min-width: 270px;
+}
+.stamp table { border-collapse: collapse; width: 100%; }
+.stamp td { border: 1px solid var(--ink); padding: 2px 8px; white-space: nowrap; }
+.stamp td:first-child { color: var(--inkSoft); width: 42%; }
+.stamp .over { color: var(--danger); font-weight: 700; }
+.toast {
+  position: absolute; left: 50%; top: 16px; transform: translateX(-50%); background: var(--ink); color: var(--sheet);
+  padding: 6px 14px; border-radius: 6px; font-size: 17px; opacity: 0; transition: opacity .2s; pointer-events: none;
+}
+.toast.show { opacity: 1; }
+dialog {
+  border: 2px solid var(--ink); background: var(--sheet); color: var(--ink); border-radius: 8px;
+  max-width: min(560px, 92vw); padding: 22px 24px;
+}
+dialog::backdrop { background: rgba(14, 30, 45, 0.45); }
+dialog h2 { margin: 0 0 8px; font-size: 30px; }
+dialog p { margin: 0 0 12px; max-width: 60ch; }
+dialog .ill { display: block; margin: 6px auto 14px; max-width: 100%; height: auto; color: var(--ink); }
+dialog .tip { color: var(--inkSoft); border-left: 3px solid var(--gridMajor); padding-left: 10px; }
+.dlgbtns { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; margin-top: 8px; }
+.bigstars { font-size: 48px; text-align: center; color: var(--star); letter-spacing: 6px; margin: 4px 0 10px; }
+.bigstars .off { color: var(--gridMajor); }
+.starlist { list-style: none; padding: 0; margin: 0 0 12px; }
+.starlist li { padding: 3px 0; }
+.life { border-top: 2px solid var(--ink); margin: 6px 0 10px; padding-top: 10px; }
+.life h3 { margin: 0 0 4px; font-size: 21px; }
+.life .ill { margin: 4px auto 8px; max-height: 120px; }
+.mat.lo { grid-template-columns: 1fr auto; }
+dialog { max-height: 92vh; overflow-y: auto; }
+.lvls { display: grid; gap: 8px; margin: 8px 0 4px; }
+.lvls button { display: flex; justify-content: space-between; text-align: left; gap: 12px; font-size: 19px; }
+.lvls .s { color: var(--star); }
+.lvls .s .off { color: var(--gridMajor); }
+[hidden] { display: none !important; }
+@media (max-width: 820px) {
+  main { grid-template-columns: 1fr; grid-template-rows: minmax(300px, 58vh) auto; }
+  aside { border-left: none; border-top: 2px solid var(--ink); }
+  .mats { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+  .stamp { right: 8px; bottom: 8px; min-width: 0; font-size: 13px; }
+  .stamp tr:first-child { display: none; }
+  .stamp td { padding: 1px 5px; }
+  header { flex-wrap: wrap; }
+  header .titles { order: 3; flex-basis: 100%; }
+  header .hstars { margin-left: auto; }
+  header h1 { font-size: 21px; }
+  header .task { font-size: 15px; }
+}
+@media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <button id="lvlBtn" aria-label="Список уровней">☰ Уровни</button>
+    <div class="titles">
+      <h1 id="title"></h1>
+      <p class="task" id="task"></p>
+    </div>
+    <div class="hstars" id="hstars" aria-label="Звёзды за уровень"></div>
+  </header>
+  <main>
+    <div id="stage">
+      <canvas id="cv" aria-label="Чертёж моста. Нажимай на точки сетки, чтобы ставить балки."></canvas>
+      <div class="stamp"><table><tbody>
+        <tr><td>Объект</td><td id="stObj"></td></tr>
+        <tr><td>Потрачено</td><td id="stCost"></td></tr>
+        <tr><td>Прогиб</td><td id="stDefl">—</td></tr>
+        <tr><td>Испытание</td><td id="stRes">не проводилось</td></tr>
+      </tbody></table></div>
+      <div class="toast" id="toast" role="status"></div>
+    </div>
+    <aside>
+      <section id="buildPanel">
+        <h2>Материал</h2>
+        <div class="mats" id="mats"></div>
+        <div id="loadSec" hidden><h2 style="margin-top:12px">Кто поедет</h2><div class="mats" id="loads"></div></div>
+        <h2 style="margin-top:12px">Инструмент</h2>
+        <div class="tools">
+          <button id="toolBuild" aria-pressed="true">✎ Строить</button>
+          <button id="toolDel" aria-pressed="false">⌫ Удалить</button>
+          <button id="undoBtn">↶ Отменить</button>
+          <button id="clearBtn">✕ Очистить</button>
+        </div>
+        <p class="rule" id="rule" style="margin-top:10px"></p>
+        <button id="testBtn" class="primary" style="width:100%;margin-top:12px">▶ Испытать</button>
+        <button id="helpBtn" style="width:100%;margin-top:8px">? Задание уровня</button>
+      </section>
+      <section id="testPanel" hidden>
+        <h2>Скорость</h2>
+        <div class="speed">
+          <button data-speed="0" aria-pressed="false">Пауза</button>
+          <button data-speed="0.25" aria-pressed="false">Медленно</button>
+          <button data-speed="1" aria-pressed="true">Обычно</button>
+        </div>
+        <h2 style="margin-top:12px">Увеличить прогиб: <b id="exagVal">×1</b></h2>
+        <input type="range" id="exag" min="1" max="20" step="1" value="1" aria-label="Во сколько раз увеличить прогиб на экране">
+        <p class="rule">Так маленький прогиб становится видно глазом. Пунктир — мост до нагрузки.</p>
+        <h2 style="margin-top:12px">Цвета</h2>
+        <div class="legend">
+          <div><i style="background:var(--tension)"></i>растяжение</div>
+          <div><i style="background:var(--compress)"></i>сжатие</div>
+          <div><i class="bendchip"></i>изгиб: одна сторона сжата, другая растянута</div>
+          <div>чем ярче цвет, тем ближе балка к поломке; мигает — почти сломалась</div>
+        </div>
+        <p class="readout" style="margin-top:12px">Самая нагруженная балка: <b id="loadVal">0 %</b></p>
+        <button id="backBtn" class="primary" style="width:100%;margin-top:12px">■ Вернуться к стройке</button>
+      </section>
+    </aside>
+  </main>
+</div>
+
+<dialog id="introDlg">
+  <h2 id="inTitle"></h2>
+  <div id="inIll"></div>
+  <p id="inIdea"></p>
+  <p id="inTask"></p>
+  <p class="tip" id="inTip"></p>
+  <div class="dlgbtns"><button class="primary" id="inGo">Начать строить</button></div>
+</dialog>
+
+<dialog id="resDlg">
+  <h2 id="resTitle"></h2>
+  <div class="bigstars" id="resStars"></div>
+  <p id="resText"></p>
+  <ul class="starlist" id="resList"></ul>
+  <div class="life" id="resLife" hidden>
+    <h3>Как это в жизни</h3>
+    <div id="resLifeIll"></div>
+    <p id="resLifeText"></p>
+  </div>
+  <div class="dlgbtns">
+    <button id="resWatch">Посмотреть ещё раз</button>
+    <button id="resEdit">Изменить мост</button>
+    <button class="primary" id="resNext">Следующий уровень</button>
+  </div>
+</dialog>
+
+<dialog id="lvlDlg">
+  <h2>Уровни</h2>
+  <div class="lvls" id="lvlList"></div>
+  <div class="dlgbtns"><button id="lvlClose">Закрыть</button></div>
+</dialog>
+
+<script>
+// ===== ФИЗИКА: XPBD, балки с осевой и изгибной жёсткостью =====
+const G = 9.81;
+const MATERIALS = {
+  road:  { name: 'Дорога', density: 60, EA: 4e8, EI: 3.0e5, tMax: 1.5e6, cMax: 1.5e6, mMax: 2.4e4, cost: 80,  bend: true,  thick: 0.26 },
+  wood:  { name: 'Дерево', density: 25, EA: 3e8, EI: 2.0e5, tMax: 3.0e5, cMax: 3.0e5, mMax: 1.5e4, cost: 50,  bend: true,  thick: 0.16 },
+  steel: { name: 'Сталь',  density: 60, EA: 2e9, EI: 1.2e6, tMax: 2.0e6, cMax: 2.0e6, mMax: 8.0e4, cost: 200, bend: true,  thick: 0.13 },
+  rope:  { name: 'Трос',   density: 5,  EA: 5e8, EI: 0,     tMax: 6.0e5, cMax: 0,     mMax: 0,     cost: 60,  bend: false, thick: 0.05, tensionOnly: true, maxLen: 8 },
+  stone: { name: 'Камень', density: 200, EA: 1.5e9, EI: 6e5, tMax: 2.0e4, cMax: 3.0e6, mMax: 1.2e4, cost: 30, bend: true, thick: 0.42, rigid: true },
+};
+const MAX_LEN = 4;
+
+function wrapAng(a) { while (a > Math.PI) a -= 2 * Math.PI; while (a <= -Math.PI) a += 2 * Math.PI; return a; }
+
+// Предел на сжатие с учётом выпучивания (формула Эйлера для шарнирного стержня)
+function compLimit(mat, L) {
+  if (mat.tensionOnly) return 0;
+  return Math.min(mat.cMax, Math.PI * Math.PI * mat.EI / (L * L));
+}
+
+function buildWorld(design, rigid = []) {
+  const P = { x: [], y: [], px: [], py: [], vx: [], vy: [], x0: [], y0: [], m: [], fixed: [], roller: [], road: [] };
+  const idx = new Map();
+  function addP(x, y, fixed, roller) {
+    const i = P.x.length;
+    P.x.push(x); P.y.push(y); P.px.push(x); P.py.push(y); P.vx.push(0); P.vy.push(0);
+    P.x0.push(x); P.y0.push(y); P.m.push(0); P.fixed.push(!!fixed && !roller); P.roller.push(!!roller); P.road.push(false);
+    return i;
+  }
+  for (const n of design.nodes) idx.set(n.id, addP(n.x, n.y, n.anchor, n.roller));
+  const dist = [], bend = [], els = [];
+  for (const e of design.elements) {
+    const mat = MATERIALS[e.mat];
+    const a = design.nodes.find(n => n.id === e.a), b = design.nodes.find(n => n.id === e.b);
+    const L = Math.hypot(b.x - a.x, b.y - a.y);
+    const nSeg = mat.bend ? Math.max(1, Math.round(L / 0.5)) : 1;
+    const ids = [idx.get(e.a)];
+    for (let k = 1; k < nSeg; k++) ids.push(addP(a.x + (b.x - a.x) * k / nSeg, a.y + (b.y - a.y) * k / nSeg, false));
+    ids.push(idx.get(e.b));
+    const segM = mat.density * L / nSeg;
+    const el = { src: e, mat, L, ids, dist: [], bend: [], broken: false, ratio: 0, cLim: compLimit(mat, L), brokenAt: null };
+    for (let k = 0; k < nSeg; k++) {
+      P.m[ids[k]] += segM / 2; P.m[ids[k + 1]] += segM / 2;
+      if (e.mat === 'road') { P.road[ids[k]] = true; P.road[ids[k + 1]] = true; }
+      const h = L / nSeg;
+      const c = { i: ids[k], j: ids[k + 1], rest: h, k: mat.EA / h, el, alive: true, lam: 0, T: 0, over: 0, idx: k, bs: [] };
+      dist.push(c); el.dist.push(c);
+    }
+    if (mat.bend) {
+      const h = L / nSeg;
+      for (let k = 1; k < nSeg; k++) {
+        const bc = { a: ids[k - 1], b: ids[k], c: ids[k + 1], th0: 0, k: mat.EI / h, el, alive: true, lam: 0, M: 0, idx: k };
+        bc.th0 = angleAt(P, bc);
+        bend.push(bc); el.bend.push(bc);
+        el.dist[k - 1].bs.push(bc); el.dist[k].bs.push(bc);
+      }
+    }
+    els.push(el);
+  }
+  // Жёсткие швы: элементы одного «жёсткого» материала в общем узле не поворачиваются друг относительно друга
+  for (const nd of design.nodes) {
+    const pi = idx.get(nd.id);
+    const at = els.filter(el => el.ids[0] === pi || el.ids[el.ids.length - 1] === pi);
+    for (let u = 0; u < at.length; u++) for (let v = u + 1; v < at.length; v++) {
+      const e1 = at[u], e2 = at[v];
+      if (e1.src.mat !== e2.src.mat || !(e1.mat.rigid || rigid.includes(e1.src.mat))) continue;
+      const end = el => el.ids[0] === pi ? { nb: el.ids[1], c: el.dist[0] } : { nb: el.ids[el.ids.length - 2], c: el.dist[el.dist.length - 1] };
+      const A = end(e1), B = end(e2);
+      const ux = P.x[A.nb] - P.x[pi], uy = P.y[A.nb] - P.y[pi], vx = P.x[B.nb] - P.x[pi], vy = P.y[B.nb] - P.y[pi];
+      const cos = (ux * vx + uy * vy) / (Math.hypot(ux, uy) * Math.hypot(vx, vy));
+      if (cos > -0.5) continue; // соединяем только «почти продолжающие» друг друга элементы (угол больше 120°)
+      const h = Math.min(A.c.rest, B.c.rest);
+      const bc = { a: A.nb, b: pi, c: B.nb, th0: 0, k: e1.mat.EI / h, el: e1, alive: true, lam: 0, M: 0, joint: true };
+      bc.th0 = angleAt(P, bc);
+      bend.push(bc); A.c.bs.push(bc); B.c.bs.push(bc);
+    }
+  }
+  const n = P.x.length;
+  P.wx = new Float64Array(n); P.wy = new Float64Array(n);
+  for (let i = 0; i < n; i++) {
+    const w = P.fixed[i] || P.m[i] <= 0 ? 0 : 1 / P.m[i];
+    P.wx[i] = w; P.wy[i] = P.roller[i] ? 0 : w;
+  }
+  P.fx = new Float64Array(n); P.fy = new Float64Array(n);
+  return { P, dist, bend, els, n, gScale: 0, time: 0 };
+}
+
+function angleAt(P, b) {
+  const ux = P.x[b.a] - P.x[b.b], uy = P.y[b.a] - P.y[b.b];
+  const vx = P.x[b.c] - P.x[b.b], vy = P.y[b.c] - P.y[b.b];
+  return Math.atan2(ux * vy - uy * vx, ux * vx + uy * vy);
+}
+
+function stepWorld(W, dt, sub = 100, iters = 2, damping = 4) {
+  const P = W.P, h = dt / sub, h2 = h * h, damp = Math.exp(-damping * h);
+  for (let s = 0; s < sub; s++) {
+    for (let i = 0; i < W.n; i++) {
+      if (P.wx[i] === 0) continue;
+      P.vx[i] += P.fx[i] * P.wx[i] * h;
+      if (P.wy[i] !== 0) P.vy[i] += (-G * W.gScale + P.fy[i] * P.wy[i]) * h;
+      P.px[i] = P.x[i]; P.py[i] = P.y[i];
+      P.x[i] += P.vx[i] * h; P.y[i] += P.vy[i] * h;
+    }
+    for (const c of W.dist) c.lam = 0;
+    for (const b of W.bend) b.lam = 0;
+    for (let it = 0; it < iters; it++) {
+      for (const c of W.dist) {
+        if (!c.alive) continue;
+        const dx = P.x[c.i] - P.x[c.j], dy = P.y[c.i] - P.y[c.j];
+        const len = Math.hypot(dx, dy) || 1e-9;
+        const C = len - c.rest;
+        if (c.el.mat.tensionOnly && C < 0) { c.lam = 0; continue; }
+        const nx = dx / len, ny = dy / len;
+        const ws = (P.wx[c.i] + P.wx[c.j]) * nx * nx + (P.wy[c.i] + P.wy[c.j]) * ny * ny;
+        if (ws === 0) continue;
+        const at = 1 / (c.k * h2);
+        const dl = (-C - at * c.lam) / (ws + at);
+        c.lam += dl;
+        P.x[c.i] += P.wx[c.i] * dl * nx; P.y[c.i] += P.wy[c.i] * dl * ny;
+        P.x[c.j] -= P.wx[c.j] * dl * nx; P.y[c.j] -= P.wy[c.j] * dl * ny;
+      }
+      for (const b of W.bend) {
+        if (!b.alive) continue;
+        const ax_ = P.wx[b.a], ay_ = P.wy[b.a], bx_ = P.wx[b.b], by_ = P.wy[b.b], cx_ = P.wx[b.c], cy_ = P.wy[b.c];
+        if (ax_ + ay_ + bx_ + by_ + cx_ + cy_ === 0) continue;
+        const ux = P.x[b.a] - P.x[b.b], uy = P.y[b.a] - P.y[b.b];
+        const vx = P.x[b.c] - P.x[b.b], vy = P.y[b.c] - P.y[b.b];
+        const u2 = ux * ux + uy * uy || 1e-9, v2 = vx * vx + vy * vy || 1e-9;
+        const C = wrapAng(Math.atan2(ux * vy - uy * vx, ux * vx + uy * vy) - b.th0);
+        const gax = uy / u2, gay = -ux / u2, gcx = -vy / v2, gcy = vx / v2;
+        const gbx = -(gax + gcx), gby = -(gay + gcy);
+        const at = 1 / (b.k * h2);
+        const den = ax_ * gax * gax + ay_ * gay * gay + bx_ * gbx * gbx + by_ * gby * gby + cx_ * gcx * gcx + cy_ * gcy * gcy + at;
+        const dl = (-C - at * b.lam) / den;
+        b.lam += dl;
+        P.x[b.a] += ax_ * dl * gax; P.y[b.a] += ay_ * dl * gay;
+        P.x[b.b] += bx_ * dl * gbx; P.y[b.b] += by_ * dl * gby;
+        P.x[b.c] += cx_ * dl * gcx; P.y[b.c] += cy_ * dl * gcy;
+      }
+    }
+    for (let i = 0; i < W.n; i++) {
+      if (P.wx[i] === 0) continue;
+      P.vx[i] = (P.x[i] - P.px[i]) / h * damp;
+      P.vy[i] = (P.y[i] - P.py[i]) / h * damp;
+    }
+  }
+  W.h2 = h2;
+  W.time += dt;
+}
+
+// Пересчёт усилий и проверка на разрушение. Возвращает список только что сломанных элементов.
+function evalStress(W, allowBreak = true) {
+  const P = W.P, newly = [];
+  for (const b of W.bend) {
+    b.M = b.alive ? -b.lam / W.h2 : 0;
+    b.r = b.alive ? Math.abs(b.M) / b.el.mat.mMax : 0;
+  }
+  for (const el of W.els) {
+    let maxR = 0, worst = null;
+    for (const c of el.dist) {
+      if (!c.alive) { c.T = 0; c.ra = 0; c.rb = 0; continue; }
+      const len = Math.hypot(P.x[c.i] - P.x[c.j], P.y[c.i] - P.y[c.j]);
+      let T = -c.lam / W.h2;
+      if (el.mat.tensionOnly && T < 0) T = 0;
+      c.T = T;
+      c.ra = T >= 0 ? T / el.mat.tMax : (el.cLim > 0 ? -T / el.cLim : 0);
+      let rb = 0, ms = 0, nb = 0;
+      const dx = P.x[c.j] - P.x[c.i], dy = P.y[c.j] - P.y[c.i];
+      for (const b of c.bs) {
+        if (!b.alive) continue;
+        rb = Math.max(rb, b.r);
+        const sg = (P.x[b.c] - P.x[b.a]) * dx + (P.y[b.c] - P.y[b.a]) * dy >= 0 ? 1 : -1;
+        ms += b.M * sg; nb++;
+      }
+      c.rb = rb; c.Ms = nb ? ms / nb : 0;
+      const r = c.ra + c.rb;
+      if (r > maxR) { maxR = r; worst = c; }
+    }
+    el.ratio = el.broken ? 0 : maxR;
+    if (!allowBreak || el.broken || !worst) continue;
+    if (maxR > 1) worst.over++; else for (const c of el.dist) c.over = 0;
+    if (worst.over >= 3) {
+      el.broken = true; worst.alive = false;
+      el.brokenAt = { x: (P.x[worst.i] + P.x[worst.j]) / 2, y: (P.y[worst.i] + P.y[worst.j]) / 2, t: W.time };
+      el.mode = worst.rb > worst.ra ? 'bend' : (worst.T < 0 ? 'comp' : 'tens');
+      for (const b of worst.bs) b.alive = false;
+      newly.push(el);
+    }
+  }
+  return newly;
+}
+
+
+// ===== УРОВНИ =====
+const river = (xL, xR) => [{ x0: -99, x1: xL, y0: -99, y1: 0 }, { x0: xR, x1: 99, y0: -99, y1: 0 }];
+const CART = { kind: 'cart', name: 'Тележка с кирпичами', mass: 1000, axle: 1.4 };
+const CAR = { kind: 'car', name: 'Машина', mass: 1500, axle: 2.2 };
+const TRUCK = { kind: 'truck', name: 'Грузовик', mass: 6000, axle: 3.2 };
+const LEVELS = [
+  {
+    id: 1, title: 'Простая балка', xL: 0, xR: 3,
+    solids: river(0, 3), water: { x0: 0, x1: 3, top: -2.2 },
+    anchors: [{ x: 0, y: 0 }, { x: 3, y: 0, roller: true }],
+    view: { x0: -4, x1: 7, y0: -4, y1: 3 }, mats: ['road'], budget: 300, norm: 0.03, load: CART,
+    task: 'Перекинь дорогу через ручей, чтобы проехала тележка с кирпичами массой 1 т.',
+    idea: 'Балка — это доска на двух опорах. Под грузом она прогибается, сильнее всего посередине. Верх балки при этом сжимается, а низ растягивается.',
+    tip: 'Нажми на левую опору, потом на правую — появится дорога. Правая опора — каток: она может немного ездить вбок, как у настоящих мостов.',
+    life: 'Так устроены пешеходные мостики через ручьи и каналы. Балки есть и в каждом доме: они держат полы и потолки.',
+  },
+  {
+    id: 2, title: 'Опора посередине', xL: 0, xR: 8,
+    solids: [...river(0, 8), { x0: 3.6, x1: 4.4, y0: -99, y1: -2, fine: true }], water: { x0: 0, x1: 8, top: -3 },
+    anchors: [{ x: 0, y: 0 }, { x: 8, y: 0, roller: true }, { x: 4, y: -2 }],
+    view: { x0: -4, x1: 12, y0: -5, y1: 3 }, mats: ['road', 'wood'], budget: 900, norm: 0.08, load: CAR,
+    task: 'Река шире самой длинной доски (4 м). В воде стоит бетонная опора — используй её, чтобы проехала машина массой 1,5 т.',
+    idea: 'Пролёт — это расстояние между опорами. Чем короче пролёт, тем меньше балка гнётся и тем больше груза выдержит.',
+    tip: 'Дорога, соединённая шарниром посередине реки без поддержки, просто сложится. Подставь под неё стойку.',
+    life: 'Длинный мост через широкую реку стоит на многих опорах. Их называют быками. Между ними — пролёты, каждый из которых работает как балка.',
+  },
+  {
+    id: 3, title: 'Сила треугольника', xL: 0, xR: 8,
+    solids: river(0, 8), water: { x0: 0, x1: 8, top: -3 },
+    anchors: [{ x: 0, y: 0 }, { x: 8, y: 0, roller: true }, { x: 0, y: -2 }, { x: 8, y: -2 }],
+    view: { x0: -4, x1: 12, y0: -5, y1: 4 }, mats: ['road', 'wood'], budget: 1800, norm: 0.06, load: CAR,
+    task: 'Опору в реку ставить нельзя. Построй мост для машины массой 1,5 т. Опираться можно на берега и на уступы пониже.',
+    idea: 'Квадрат из палок на шарнирах легко сложить набок, а треугольник — нет. Поэтому инженеры собирают конструкции из треугольников.',
+    tip: 'Стойку можно упереть в нижний уступ берега наискосок — получится треугольник. Или построй треугольники над дорогой.',
+    life: 'Треугольники есть в стропилах крыши, в опорах линий электропередачи, в стреле подъёмного крана и в Эйфелевой башне.',
+  },
+  {
+    id: 4, title: 'Ферма', xL: 0, xR: 16,
+    solids: river(0, 16), water: { x0: 0, x1: 16, top: -3.2 },
+    anchors: [{ x: 0, y: 0 }, { x: 16, y: 0, roller: true }, { x: 0, y: -2 }, { x: 16, y: -2 }],
+    view: { x0: -4, x1: 20, y0: -5, y1: 6 }, mats: ['road', 'wood', 'steel'], budget: 4000, norm: 0.06, load: TRUCK,
+    task: 'Широкая река и грузовик массой 6 т. Собери ферму — мост из треугольников. Сталь дорогая: ставь её только там, где без неё никак.',
+    idea: 'Ферма — это конструкция из треугольников. В ней одни балки сжимаются, другие растягиваются, и почти ни одна не гнётся. Во время испытания посмотри, какого цвета верх и низ фермы.',
+    tip: 'Доски дороги длиной 4 м под грузовиком ломаются. Делай узлы на дороге каждые 2 метра и поддерживай каждый.',
+    life: 'Железнодорожные мосты часто делают из стальных ферм. Фермы держат и крыши больших цехов, стадионов и вокзалов.',
+  },
+  {
+    id: 5, title: 'Перекрытие', xL: 0, xR: 8, passTitle: 'Пол выдержал!', fellText: 'Пол должен без разрывов идти от стены до стены.',
+    solids: [{ x0: -99, x1: 0, y0: -99, y1: 0 }, { x0: 8, x1: 99, y0: -99, y1: 0 }, { x0: 0, x1: 8, y0: -99, y1: -4 }],
+    forbid: [{ x0: 0, x1: 8, y0: 0, y1: 99, label: 'здесь стоят люди' }, { x0: 0, x1: 8, y0: -4, y1: -2, label: 'спортзал: ниже балкам нельзя' }],
+    anchors: [{ x: 0, y: 0 }, { x: 8, y: 0, roller: true }, { x: 0, y: -1 }, { x: 8, y: -1 }, { x: 0, y: -2 }, { x: 8, y: -2 }],
+    view: { x0: -3, x1: 11, y0: -5, y1: 3 }, mats: ['road', 'wood', 'steel'], matNames: { road: 'Плита пола' },
+    budget: 1700, norm: 0.03,
+    load: { kind: 'crowd', name: 'Люди', count: 30, each: 80, x0: 0.3, x1: 7.7 },
+    task: 'Сделай пол над спортзалом шириной 8 м. На нём соберутся 30 человек — это 2,4 т. Колонны в зал ставить нельзя, пол выше не поднять.',
+    idea: 'Перекрытие — это пол, который висит над пустым пространством. Нагрузка на нём не в одной точке, а распределена по всей длине: люди стоят везде.',
+    tip: 'Все балки придётся спрятать под полом, в полосе между полом и потолком зала. Треугольники работают и вверх ногами.',
+    life: 'Над спортзалом или бассейном колонны мешают, поэтому перекрытие там держат фермы или высокие балки от стены до стены. Ферма под полом прячется в потолке.',
+  },
+  {
+    id: 6, title: 'Арка', xL: 0, xR: 10,
+    solids: river(0, 10), water: { x0: 0, x1: 10, top: -3.6 },
+    anchors: [{ x: 0, y: 0 }, { x: 10, y: 0, roller: true }, { x: 0, y: -3 }, { x: 10, y: -3 }],
+    view: { x0: -3, x1: 13, y0: -5, y1: 3 }, mats: ['stone', 'road'], budget: 1500, norm: 0.04,
+    load: { kind: 'truck', name: 'Грузовик с песком', mass: 4000, axle: 3.2 },
+    task: 'Построй каменный мост для грузовика массой 4 т. Камень дешёвый и очень прочный на сжатие, но трескается, если его тянуть или гнуть.',
+    idea: 'Арка — это изогнутая полоса из камней, которые давят друг на друга. Если форма арки правильная, весь груз превращается в сжатие, а сжатие камень держит отлично.',
+    tip: 'Начни арку с нижних уступов и подними её к середине, как радугу. Дорогу положи сверху и подопри каменными столбиками, стоящими на арке.',
+    life: 'Каменные арочные мосты стоят веками. Римский акведук Пон-дю-Гар во Франции построили почти две тысячи лет назад, и он стоит до сих пор.',
+  },
+  {
+    id: 7, title: 'Балкон', xL: 0, xR: 4, passTitle: 'Балкон выдержал!', fellText: 'Балкон должен быть длиной 4 м, без разрывов.',
+    solids: [{ x0: -99, x1: 0, y0: -99, y1: 99 }, { x0: -99, x1: 99, y0: -99, y1: -4.5 }],
+    forbid: [{ x0: 0, x1: 99, y0: 0, y1: 99, label: 'на балконе стоят люди' }],
+    anchors: [{ x: 0, y: 2 }, { x: 0, y: 0 }, { x: 0, y: -2 }],
+    view: { x0: -2, x1: 7, y0: -5, y1: 4 }, mats: ['road', 'wood', 'steel', 'rope'], matNames: { road: 'Пол балкона' },
+    budget: 850, norm: 0.03,
+    load: { kind: 'crowd', name: 'Люди', count: 6, each: 80, x0: 0.4, x1: 3.7 },
+    task: 'Сделай балкон длиной 4 м. Он держится только за стену дома. На него выйдут 6 человек.',
+    idea: 'Консоль — это балка, закреплённая только с одного конца. Её можно подвесить тросом сверху (трос тянет) или подпереть подкосом снизу (подкос давит).',
+    tip: 'Пол балкона на одном шарнире просто повиснет вниз. Каждый кусок пола должен быть стороной треугольника: стена, пол и трос сверху или подкос снизу.',
+    life: 'Консоли — это балконы, козырьки над подъездами, навесы трибун стадионов и даже крылья самолёта.',
+  },
+  {
+    id: 8, title: 'Висячий мост', xL: 0, xR: 16, rigid: ['road'],
+    solids: [...river(0, 16), { x0: -0.3, x1: 0.3, y0: 0, y1: 6, fine: true }, { x0: 15.7, x1: 16.3, y0: 0, y1: 6, fine: true }],
+    water: { x0: 0, x1: 16, top: -3.2 },
+    anchors: [{ x: 0, y: 0 }, { x: 16, y: 0, roller: true }, { x: 0, y: 6 }, { x: 16, y: 6 }],
+    view: { x0: -3, x1: 19, y0: -5, y1: 8 }, mats: ['road', 'rope'], budget: 3800, norm: 0.30,
+    load: { kind: 'truck', name: 'Автобус', mass: 3000, axle: 3.2 },
+    task: 'Подвесь дорогу к двум башням-пилонам, чтобы проехал автобус массой 3 т. Есть только дорога и тросы. Трос бывает длиной до 8 м.',
+    idea: 'Трос держит только растяжение: тянуть его можно, а давить бесполезно — он провиснет. Здесь доски дороги соединены жёстко, в сплошной настил.',
+    tip: 'Протяни главный трос от пилона к пилону, провисающей дугой, и подвесь к нему дорогу вертикальными тросами. Или натяни тросы прямо от вершины пилона к дороге.',
+    life: 'Мост Золотые Ворота в Сан-Франциско и Крымский мост в Москве — висячие. Если тросы идут прямо от пилона к дороге, мост называют вантовым — например, Русский мост во Владивостоке. Настоящие висячие мосты очень тяжёлые: собственный вес натягивает тросы, и мост меньше качается.',
+  },
+  {
+    id: 9, title: 'Песочница', xL: 0, xR: 20, sandbox: true,
+    solids: [...river(0, 20), { x0: 9.6, x1: 10.4, y0: -99, y1: -2, fine: true }, { x0: -0.3, x1: 0.3, y0: 0, y1: 6, fine: true }, { x0: 19.7, x1: 20.3, y0: 0, y1: 6, fine: true }],
+    water: { x0: 0, x1: 20, top: -3.2 },
+    anchors: [{ x: 0, y: 0 }, { x: 20, y: 0, roller: true }, { x: 0, y: -2 }, { x: 20, y: -2 }, { x: 0, y: -3 }, { x: 20, y: -3 }, { x: 10, y: -2 }, { x: 0, y: 6 }, { x: 20, y: 6 }],
+    view: { x0: -3, x1: 23, y0: -5, y1: 8 }, mats: ['road', 'wood', 'steel', 'rope', 'stone'], budget: Infinity, norm: 0.07,
+    loadOptions: [CART, CAR, TRUCK, { kind: 'truck', name: 'Тяжёлый грузовик', mass: 12000, axle: 3.6 }], load: CAR,
+    task: 'Свободная стройка: река 20 м, все материалы, опора посередине и пилоны. Выбери, кто поедет, и проверь любую идею.',
+    idea: 'Здесь нет бюджета и звёзд. Попробуй построить один и тот же мост разными способами: балками на опорах, фермой, аркой, на тросах — и сравни прогиб.',
+    tip: 'Начни с самого лёгкого груза, а потом увеличивай. Найди самый дешёвый мост, который выдержит тяжёлый грузовик.',
+  },
+];
+
+// ===== ИСПЫТАНИЕ =====
+const SETTLE = 1.2, CAR_SPEED = 3;
+
+function designCost(design) {
+  let sum = 0;
+  for (const e of design.elements) {
+    const a = design.nodes.find(n => n.id === e.a), b = design.nodes.find(n => n.id === e.b);
+    sum += Math.hypot(b.x - a.x, b.y - a.y) * MATERIALS[e.mat].cost;
+  }
+  return Math.round(sum);
+}
+function loadMass(load) { return load.kind === 'crowd' ? load.count * load.each : load.mass; }
+
+function createTest(design, level, load = level.load) {
+  const W = buildWorld(design, level.rigid || []);
+  const roadSegs = W.dist.filter(c => c.el.src.mat === 'road');
+  const T = {
+    W, level, load, roadSegs, t: 0,
+    car: { xr: level.xL - 5, yr: 0, yf: 0, yr0: 0, yf0: 0, falling: false, vx: CAR_SPEED, vy: 0, ang: 0, va: 0 },
+    people: null, maxDefl: 0, maxRatio: 0, firstBreak: null, endAt: null, result: null, failReason: null,
+  };
+  if (load.kind === 'crowd') {
+    T.people = [];
+    for (let k = 0; k < load.count; k++) {
+      const x = load.x0 + (load.x1 - load.x0) * (load.count > 1 ? k / (load.count - 1) : 0.5);
+      T.people.push({ x, y: 0, y0: 0, on: false, falling: false, vy: 0, at: 0 });
+    }
+    // появляются вперемешку, но всегда в одном и том же порядке
+    const order = T.people.map((p, i) => i).sort((a, b) => ((a * 7919) % 31) - ((b * 7919) % 31));
+    order.forEach((i, k) => T.people[i].at = SETTLE + 0.3 + k * Math.min(0.2, 4 / load.count));
+    T.allIn = Math.max(...T.people.map(p => p.at));
+  }
+  return T;
+}
+
+function findRoad(T, x, prevY) {
+  const P = T.W.P;
+  let best = null, bd = Infinity;
+  for (const c of T.roadSegs) {
+    if (!c.alive) continue;
+    const x1 = P.x[c.i], x2 = P.x[c.j];
+    const lo = Math.min(x1, x2), hi = Math.max(x1, x2);
+    if (x < lo - 1e-6 || x > hi + 1e-6 || hi - lo < 1e-6) continue;
+    const t = (x - x1) / (x2 - x1);
+    const y = P.y[c.i] + (P.y[c.j] - P.y[c.i]) * t;
+    const y0 = P.y0[c.i] + (P.y0[c.j] - P.y0[c.i]) * t;
+    const d = Math.abs(y - prevY);
+    if (d < bd) { bd = d; best = { c, t, y, y0 }; }
+  }
+  if (!best || bd > 0.6) return null;
+  return best;
+}
+
+function tickCar(T, dt) {
+  const P = T.W.P, L = T.level, car = T.car, ld = T.load;
+  const axleF = ld.mass * G / 2;
+  if (!car.falling && T.t > SETTLE && !T.result) car.xr += CAR_SPEED * dt;
+  if (!car.falling) {
+    const axles = [car.xr, car.xr + ld.axle];
+    const ys = [car.yr, car.yf], y0s = [0, 0];
+    for (let k = 0; k < 2; k++) {
+      const x = axles[k];
+      if (x <= L.xL + 0.15 || x >= L.xR - 0.15) { ys[k] = 0; continue; }
+      const r = findRoad(T, x, ys[k]);
+      if (!r) { car.falling = true; T.failReason = T.failReason || 'fell'; break; }
+      ys[k] = r.y; y0s[k] = r.y0;
+      P.fy[r.c.i] -= axleF * (1 - r.t);
+      P.fy[r.c.j] -= axleF * r.t;
+    }
+    if (!car.falling) { car.yr = ys[0]; car.yf = ys[1]; car.yr0 = y0s[0]; car.yf0 = y0s[1]; car.ang = Math.atan2(car.yf - car.yr, ld.axle); }
+    else { car.vx = T.t > SETTLE ? CAR_SPEED : 0; car.vy = 0; car.va = -0.6; }
+  } else {
+    car.yr0 = car.yr; car.yf0 = car.yf;
+    car.vy -= G * dt; car.xr += car.vx * dt; car.yr += car.vy * dt; car.ang += car.va * dt; car.yf = car.yr + Math.sin(car.ang) * ld.axle;
+  }
+  if (!T.failReason && car.xr > L.xR + 1.5 && T.endAt === null) T.endAt = T.t + 0.4;
+}
+
+function tickCrowd(T, dt) {
+  const P = T.W.P, F = T.load.each * G;
+  for (const p of T.people) {
+    if (T.t < p.at) continue;
+    if (p.falling) { p.vy -= G * dt; p.y += p.vy * dt; p.y0 = p.y; continue; }
+    const r = findRoad(T, p.x, p.on ? p.y : 0);
+    if (!r) { p.falling = true; p.on = true; T.failReason = T.failReason || 'fell'; continue; }
+    p.on = true; p.y = r.y; p.y0 = r.y0;
+    const k = Math.min(1, (T.t - p.at) / 0.4);
+    P.fy[r.c.i] -= F * k * (1 - r.t);
+    P.fy[r.c.j] -= F * k * r.t;
+  }
+  if (!T.failReason && T.t > T.allIn + 2.5 && T.endAt === null) T.endAt = T.t;
+}
+
+function tickTest(T, dt) {
+  const W = T.W, P = W.P;
+  T.t += dt;
+  W.gScale = Math.min(1, T.t / 1.0);
+  P.fx.fill(0); P.fy.fill(0);
+  if (T.people) tickCrowd(T, dt); else tickCar(T, dt);
+
+  stepWorld(W, dt);
+  const broken = evalStress(W, T.t > 0.3);
+  if (broken.length && !T.firstBreak) T.firstBreak = broken[0];
+
+  const fallen = T.car.falling || (T.people && T.people.some(p => p.falling));
+  if (!T.firstBreak && !fallen) {
+    let md = 0;
+    for (let i = 0; i < W.n; i++) if (P.road[i]) md = Math.max(md, P.y0[i] - P.y[i]);
+    T.maxDefl = Math.max(T.maxDefl, md);
+    let mr = 0; for (const el of W.els) mr = Math.max(mr, el.ratio);
+    T.maxRatio = Math.max(T.maxRatio, mr);
+    if (T.maxDefl > 0.7) T.failReason = T.failReason || 'sag';
+  }
+  if (T.firstBreak && !T.failReason) T.failReason = 'broke';
+  if (T.failReason && (T.endAt === null || T.endAt > T.t + 2.5)) T.endAt = T.t + (T.failReason === 'sag' ? 1.0 : 2.5);
+  if (T.endAt !== null && T.t >= T.endAt && !T.result) T.result = T.failReason ? 'fail' : 'pass';
+  return T;
+}
+
+function scoreTest(T, design) {
+  const cost = designCost(design);
+  const pass = T.result === 'pass';
+  return { pass, cost, stars: [pass, pass && cost <= T.level.budget, pass && T.maxDefl <= T.level.norm] };
+}
+
+
+// ===== ПРИЛОЖЕНИЕ =====
+const $ = s => document.querySelector(s);
+const cv = $('#cv'), ctx = cv.getContext('2d');
+const SNAP_NODE = 0.3, GRID = 0.5;
+const fmt = (v, d = 1) => v.toFixed(d).replace('.', ',');
+const STORE = 'mosty-v1';
+
+let theme = {};
+function readTheme() {
+  const cs = getComputedStyle(document.documentElement);
+  for (const k of ['paper', 'sheet', 'grid', 'gridMajor', 'ink', 'inkSoft', 'tension', 'compress', 'wood', 'steel', 'road', 'rope', 'stone', 'water', 'ground', 'danger', 'ok'])
+    theme[k] = cs.getPropertyValue('--' + k).trim();
+}
+readTheme();
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', readTheme);
+
+const S = {
+  li: 0, design: null, mode: 'build', tool: 'build', mat: 'road',
+  start: null, hover: null, dragging: false, downPt: null,
+  undo: [], test: null, loadIdx: 0, speed: 1, exag: 1, nextId: 1, view: null, lastTest: null,
+  progress: { stars: {}, designs: {} },
+};
+
+function load() {
+  try { const v = JSON.parse(localStorage.getItem(STORE)); if (v && v.stars) S.progress = v; } catch (e) { }
+}
+function save() {
+  try { localStorage.setItem(STORE, JSON.stringify(S.progress)); } catch (e) { }
+}
+
+// ---------- уровни и проект ----------
+const matName = k => (level().matNames || {})[k] || MATERIALS[k].name;
+const maxLenOf = k => MATERIALS[k].maxLen || MAX_LEN;
+function currentLoad() { const L = level(); return L.loadOptions ? L.loadOptions[S.loadIdx] : L.load; }
+const nb = t => t.replace(/(\d) (т|м|кг)/g, '$1\u00a0$2');
+const tons = m => `${fmt(m / 1000, m % 1000 ? 1 : 0)} т`;
+function level() { return LEVELS[S.li]; }
+function freshDesign(L) {
+  let id = 1;
+  return { nodes: L.anchors.map(a => ({ id: id++, x: a.x, y: a.y, anchor: true, roller: !!a.roller })), elements: [] };
+}
+function startLevel(li, showIntro = true) {
+  S.li = li; const L = level();
+  const saved = S.progress.designs[L.id];
+  S.design = saved ? JSON.parse(JSON.stringify(saved)) : freshDesign(L);
+  S.nextId = Math.max(0, ...S.design.nodes.map(n => n.id), ...S.design.elements.map(e => e.id)) + 1;
+  if (!L.mats.includes(S.mat)) S.mat = L.mats[0];
+  S.undo = []; S.start = null; S.lastTest = null; S.loadIdx = L.loadOptions ? 1 : 0;
+  exitTest();
+  buildMatButtons(); buildLoadButtons();
+  $('#rule').textContent = L.mats.includes('rope') ? 'Самая длинная балка — 4 м, трос — до 8 м. Все узлы — шарниры.' : 'Самая длинная балка — 4 м. Каждая балка крепится к узлам шарнирами.';
+  $('#hstars').hidden = !!L.sandbox;
+  $('#title').textContent = `${L.id}. ${L.title}`;
+  $('#task').textContent = nb(L.task);
+  updateHeaderStars();
+  $('#stRes').textContent = 'не проводилось';
+  $('#stDefl').textContent = '—';
+  resize();
+  if (showIntro) openIntro();
+}
+function persistDesign() { S.progress.designs[level().id] = S.design; save(); }
+
+function starsHTML(arr) { return [0, 1, 2].map(i => `<span class="${arr && arr[i] ? '' : 'off'}">★</span>`).join(''); }
+function updateHeaderStars() { $('#hstars').innerHTML = starsHTML(S.progress.stars[level().id]); }
+
+function buildMatButtons() {
+  const box = $('#mats'); box.innerHTML = '';
+  for (const k of level().mats) {
+    const m = MATERIALS[k];
+    const b = document.createElement('button');
+    b.className = 'mat'; b.setAttribute('aria-pressed', k === S.mat);
+    b.innerHTML = `<span class="sw" style="background:var(--${k})"></span><span>${matName(k)}</span><span class="price">${m.cost} ₽/м</span>`;
+    b.onclick = () => { S.mat = k; setTool('build'); buildMatButtons(); };
+    box.appendChild(b);
+  }
+}
+function buildLoadButtons() {
+  const L = level(), box = $('#loads');
+  $('#loadSec').hidden = !L.loadOptions;
+  if (!L.loadOptions) return;
+  box.innerHTML = '';
+  L.loadOptions.forEach((ld, i) => {
+    const b = document.createElement('button');
+    b.setAttribute('aria-pressed', i === S.loadIdx);
+    b.innerHTML = `<span>${ld.name}</span><span class="price">${tons(ld.mass)}</span>`;
+    b.className = 'mat lo';
+    b.onclick = () => { S.loadIdx = i; buildLoadButtons(); };
+    box.appendChild(b);
+  });
+}
+function setTool(t) {
+  S.tool = t; S.start = null;
+  $('#toolBuild').setAttribute('aria-pressed', t === 'build');
+  $('#toolDel').setAttribute('aria-pressed', t === 'del');
+  cv.style.cursor = t === 'del' ? 'pointer' : 'crosshair';
+}
+
+// ---------- геометрия экрана ----------
+function resize() {
+  const r = cv.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+  cv.width = Math.max(1, Math.round(r.width * dpr)); cv.height = Math.max(1, Math.round(r.height * dpr));
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const v = level().view, w = r.width, h = r.height;
+  const padT = 40, padB = w < 600 ? 80 : 30;
+  const vw = v.x1 - v.x0, vh = v.y1 - v.y0;
+  const s = Math.max(4, Math.min((w - 40) / vw, (h - padT - padB) / vh));
+  const ty = padT + Math.max(0, (h - padT - padB) - vh * s) / 2;
+  S.view = { s, ox: (w - vw * s) / 2 - v.x0 * s, oy: ty + v.y1 * s, w, h };
+}
+window.addEventListener('resize', resize);
+const sx = x => S.view.ox + x * S.view.s;
+const sy = y => S.view.oy - y * S.view.s;
+const wx = px => (px - S.view.ox) / S.view.s;
+const wy = py => (S.view.oy - py) / S.view.s;
+
+// ---------- редактор ----------
+function nodeAt(x, y, r = SNAP_NODE) {
+  let best = null, bd = r;
+  for (const n of S.design.nodes) { const d = Math.hypot(n.x - x, n.y - y); if (d < bd) { bd = d; best = n; } }
+  return best;
+}
+function snap(x, y) {
+  const n = nodeAt(x, y);
+  if (n) return { x: n.x, y: n.y, node: n };
+  return { x: Math.round(x / GRID) * GRID, y: Math.round(y / GRID) * GRID, node: null };
+}
+function validPoint(p) {
+  if (p.node) return true;
+  const L = level(), v = L.view, e = 1e-6;
+  if (p.x < v.x0 || p.x > v.x1 || p.y < v.y0 + 0.4 || p.y > v.y1 - 0.2) return false;
+  for (const r of L.solids) if (p.x >= r.x0 - e && p.x <= r.x1 + e && p.y >= r.y0 - e && p.y < r.y1 - e) return false;
+  for (const r of L.forbid || []) if (p.x > r.x0 + e && p.x < r.x1 - e && p.y > r.y0 + e && p.y < r.y1 - e) return false;
+  return true;
+}
+function pushUndo() { S.undo.push(JSON.stringify(S.design)); if (S.undo.length > 60) S.undo.shift(); }
+function getOrCreateNode(p) {
+  if (p.node) return p.node;
+  const ex = S.design.nodes.find(n => Math.abs(n.x - p.x) < 1e-6 && Math.abs(n.y - p.y) < 1e-6);
+  if (ex) return ex;
+  const n = { id: S.nextId++, x: p.x, y: p.y, anchor: false };
+  S.design.nodes.push(n); return n;
+}
+function tryAdd(a, b) {
+  const len = Math.hypot(b.x - a.x, b.y - a.y);
+  if (len < 0.01) return false;
+  if (len > maxLenOf(S.mat) + 1e-6) { toast(S.mat === 'rope' ? `Слишком длинно: ${fmt(len)} м. Трос — до 8 м.` : `Слишком длинно: ${fmt(len)} м. Самая длинная балка — 4 м.`); return false; }
+  if (!validPoint(b)) { toast(forbidMsg(b)); return false; }
+  pushUndo();
+  const na = getOrCreateNode(a), nb = getOrCreateNode(b);
+  if (S.design.elements.some(e => (e.a === na.id && e.b === nb.id) || (e.a === nb.id && e.b === na.id))) {
+    S.undo.pop(); return false;
+  }
+  S.design.elements.push({ id: S.nextId++, a: na.id, b: nb.id, mat: S.mat });
+  persistDesign(); updateStamp();
+  return nb;
+}
+function forbidMsg(p) {
+  for (const r of level().forbid || []) if (p.x > r.x0 && p.x < r.x1 && p.y > r.y0 && p.y < r.y1) return `Сюда нельзя: ${r.label}.`;
+  return 'Сюда нельзя: там земля или опора.';
+}
+function cleanupNodes() {
+  const used = new Set(); for (const e of S.design.elements) { used.add(e.a); used.add(e.b); }
+  S.design.nodes = S.design.nodes.filter(n => n.anchor || used.has(n.id));
+}
+function distToSeg(px, py, ax, ay, bx, by) {
+  const dx = bx - ax, dy = by - ay, l2 = dx * dx + dy * dy || 1e-9;
+  const t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / l2));
+  return Math.hypot(px - ax - t * dx, py - ay - t * dy);
+}
+function elementAt(x, y) {
+  let best = null, bd = 0.3;
+  for (const e of S.design.elements) {
+    const a = nodeById(e.a), b = nodeById(e.b);
+    const d = distToSeg(x, y, a.x, a.y, b.x, b.y);
+    if (d < bd) { bd = d; best = e; }
+  }
+  return best;
+}
+const nodeById = id => S.design.nodes.find(n => n.id === id);
+function deleteAt(x, y) {
+  const n = nodeAt(x, y, 0.2);
+  if (n && !n.anchor) {
+    pushUndo();
+    S.design.elements = S.design.elements.filter(e => e.a !== n.id && e.b !== n.id);
+  } else {
+    const e = elementAt(x, y); if (!e) return;
+    pushUndo();
+    S.design.elements = S.design.elements.filter(q => q !== e);
+  }
+  cleanupNodes(); persistDesign(); updateStamp();
+}
+
+function evPoint(ev) { const r = cv.getBoundingClientRect(); return { x: wx(ev.clientX - r.left), y: wy(ev.clientY - r.top) }; }
+cv.addEventListener('pointerdown', ev => {
+  if (S.mode !== 'build') return;
+  if (ev.button === 2) { S.start = null; return; }
+  cv.setPointerCapture(ev.pointerId);
+  const w = evPoint(ev);
+  if (S.tool === 'del') { deleteAt(w.x, w.y); return; }
+  const p = snap(w.x, w.y);
+  S.hover = p;
+  if (!S.start) {
+    if (!validPoint(p)) { toast(forbidMsg(p)); return; }
+    S.start = p; S.dragging = true; S.downPt = p;
+  } else if (Math.abs(p.x - S.start.x) < 1e-6 && Math.abs(p.y - S.start.y) < 1e-6) {
+    S.start = null;
+  } else {
+    const nb = tryAdd(S.start, p);
+    if (nb) S.start = { x: nb.x, y: nb.y, node: nb };
+    S.dragging = false;
+  }
+});
+cv.addEventListener('pointermove', ev => {
+  if (S.mode !== 'build') return;
+  const w = evPoint(ev);
+  S.hover = S.tool === 'del' ? { x: w.x, y: w.y, del: true } : snap(w.x, w.y);
+});
+cv.addEventListener('pointerup', ev => {
+  if (S.mode !== 'build' || S.tool !== 'build' || !S.dragging || !S.start) return;
+  S.dragging = false;
+  const w = evPoint(ev), p = snap(w.x, w.y);
+  if (Math.abs(p.x - S.start.x) < 1e-6 && Math.abs(p.y - S.start.y) < 1e-6) return;
+  const nb = tryAdd(S.start, p);
+  if (nb) S.start = { x: nb.x, y: nb.y, node: nb };
+});
+cv.addEventListener('pointerleave', () => { S.hover = null; });
+cv.addEventListener('contextmenu', ev => { ev.preventDefault(); S.start = null; });
+window.addEventListener('keydown', ev => {
+  if (ev.key === 'Escape') S.start = null;
+  if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 'z') { ev.preventDefault(); undo(); }
+});
+function undo() {
+  if (S.mode !== 'build' || !S.undo.length) return;
+  S.design = JSON.parse(S.undo.pop()); S.start = null; persistDesign(); updateStamp();
+}
+
+let toastT = null;
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function updateStamp() {
+  const L = level(), cost = designCost(S.design);
+  $('#stObj').textContent = `№ ${L.id}. ${L.title}`;
+  const c = $('#stCost');
+  c.textContent = L.sandbox ? `${cost} ₽` : `${cost} ₽ из ${L.budget} ₽`;
+  c.className = cost > L.budget ? 'over' : '';
+}
+
+// ---------- испытание ----------
+function enterTest() {
+  if (!S.design.elements.length) { toast('Сначала построй мост.'); return; }
+  S.mode = 'test'; S.start = null;
+  S.test = createTest(JSON.parse(JSON.stringify(S.design)), level(), currentLoad());
+  S.speed = 1; setSpeedButtons(); S.exag = +$('#exag').value;
+  $('#buildPanel').hidden = true; $('#testPanel').hidden = false;
+  $('#stRes').textContent = 'идёт…';
+  cv.style.cursor = 'default';
+}
+function exitTest() {
+  S.mode = 'build'; S.test = null;
+  $('#buildPanel').hidden = false; $('#testPanel').hidden = true;
+  setTool(S.tool); updateStamp();
+}
+function setSpeedButtons() {
+  document.querySelectorAll('[data-speed]').forEach(b => b.setAttribute('aria-pressed', +b.dataset.speed === S.speed));
+}
+document.querySelectorAll('[data-speed]').forEach(b => b.onclick = () => { S.speed = +b.dataset.speed; setSpeedButtons(); });
+$('#exag').oninput = e => { S.exag = +e.target.value; $('#exagVal').textContent = '×' + S.exag; };
+
+let slowUntil = 0;
+function advanceTest() {
+  const T = S.test; if (!T || T.result) return;
+  let sp = S.speed;
+  if (T.firstBreak && T.t < T.firstBreak.brokenAt.t + 1.2 && sp > 0.3) sp = 0.3;
+  if (sp <= 0) return;
+  tickTest(T, sp / 60);
+  const pct = Math.round(Math.min(T.maxRatio, 1.5) * 100);
+  $('#loadVal').textContent = pct + ' %';
+  $('#stDefl').textContent = `${fmt(T.maxDefl * 100)} см, норма ${fmt(level().norm * 100, 0)}`;
+  if (T.result) finishTest();
+}
+function finishTest() {
+  const T = S.test, L = level(), sc = scoreTest(T, S.design);
+  S.lastTest = sc;
+  $('#stRes').textContent = sc.pass ? 'пройдено' : 'не пройдено';
+  if (sc.pass && !L.sandbox) {
+    const old = S.progress.stars[L.id] || [false, false, false];
+    S.progress.stars[L.id] = old.map((v, i) => v || sc.stars[i]); save(); updateHeaderStars();
+  }
+  setTimeout(() => showResult(T, sc), 350);
+}
+
+function showResult(T, sc) {
+  const L = level(), ld = T.load;
+  $('#resStars').innerHTML = L.sandbox ? '' : starsHTML(sc.stars);
+  $('#resStars').hidden = !!L.sandbox;
+  const list = $('#resList'); list.innerHTML = '';
+  const li = (ok, text) => { const e = document.createElement('li'); e.innerHTML = `<span style="color:var(--${ok ? 'star' : 'gridMajor'})">★</span> ${text}`; list.appendChild(e); };
+  const plain = text => { const e = document.createElement('li'); e.textContent = text; list.appendChild(e); };
+  $('#resLife').hidden = true;
+  if (sc.pass) {
+    $('#resTitle').textContent = L.passTitle || (ld.kind === 'cart' ? 'Тележка проехала!' : ld.kind === 'car' ? 'Машина проехала!' : `${ld.name} проехал!`);
+    $('#resText').textContent = L.sandbox ? `Мост выдержал груз ${tons(loadMass(ld))}. Попробуй груз потяжелее или мост подешевле.` : 'Конструкция выдержала нагрузку.';
+    if (L.sandbox) {
+      plain(`Стоимость: ${sc.cost} ₽.`);
+      plain(`Прогиб: ${fmt(T.maxDefl * 100)} см.`);
+      plain(`Самая нагруженная балка: ${Math.round(T.maxRatio * 100)} % от предела.`);
+    } else {
+      li(true, 'Выдержала.');
+      li(sc.stars[1], sc.stars[1] ? `Уложился в бюджет: ${sc.cost} ₽ из ${L.budget} ₽.` : `Дороговато: ${sc.cost} ₽, а бюджет ${L.budget} ₽. Где можно сэкономить?`);
+      li(sc.stars[2], sc.stars[2] ? `Прогиб ${fmt(T.maxDefl * 100)} см — в норме (до ${fmt(L.norm * 100, 0)} см).` : `Прогиб ${fmt(T.maxDefl * 100)} см — больше нормы (${fmt(L.norm * 100, 0)} см). Конструкция гнётся сильнее, чем нужно.`);
+    }
+    if (L.life) {
+      $('#resLifeIll').innerHTML = LIFE[L.id] || '';
+      $('#resLifeText').textContent = L.life;
+      $('#resLife').hidden = false;
+    }
+  } else {
+    let title = 'Не выдержала', text = '';
+    if (T.failReason === 'broke') {
+      const el = T.firstBreak;
+      title = el.mat === MATERIALS.stone ? 'Камень треснул' : 'Балка сломалась';
+      text = 'Первая сломанная балка отмечена кругом. Посмотри, какая балка покраснела первой. Что можно сделать, чтобы ей было легче? ';
+      if (el.mat === MATERIALS.stone && el.mode !== 'comp') text += 'Камень треснул, потому что его гнуло или тянуло. Сделай арку плавной, как дуга, чтобы камни только давили друг на друга.';
+      else if (el.mode === 'bend') text += 'Она сломалась от изгиба: слишком длинный кусок без поддержки. Подопри её посередине или сделай пролёт короче.';
+      else if (el.mode === 'comp') text += 'Она сломалась от сжатия: длинные сжатые балки выгибаются вбок. Сделай её короче или возьми материал прочнее.';
+      else text += 'Её разорвало растяжением. Возьми материал прочнее или раздели нагрузку между двумя балками.';
+    } else if (T.failReason === 'sag') {
+      title = 'Конструкция сложилась';
+      text = 'Где-то она складывается, как квадрат на шарнирах, или ей не на что опереться. Найди место, где провис сильнее всего, и подопри его или поставь там треугольник.';
+    } else if (T.people) {
+      title = 'Человек упал';
+      text = 'Под кем-то из людей нет пола. ' + (L.fellText || '');
+    } else {
+      title = ld.kind === 'cart' ? 'Тележка упала' : ld.kind === 'car' ? 'Машина упала' : `${ld.name} упал`;
+      text = `На пути нет дороги. ${matName('road')} (тёмный материал) должна непрерывно идти от одного берега до другого.`;
+    }
+    $('#resTitle').textContent = title; $('#resText').textContent = text;
+  }
+  $('#resNext').hidden = !(sc.pass && S.li < LEVELS.length - 1);
+  $('#resDlg').showModal();
+}
+
+// ---------- диалоги ----------
+const ILL = {
+  1: `<svg class="ill" width="320" height="120" viewBox="0 0 320 120" fill="none" stroke="currentColor" stroke-width="2"><path d="M30 60 Q160 84 290 60" stroke-width="7" stroke-linecap="round"/><path d="M30 60 L290 60" stroke-dasharray="5 5" stroke-width="1.5"/><path d="M30 64 l-12 20 h24z M290 64 l-12 20 h24z"/><circle cx="284" cy="90" r="4"/><circle cx="296" cy="90" r="4"/><path d="M160 20 v40 m-8 -10 l8 10 l8 -10"/><text x="170" y="34" font-size="16" fill="currentColor" stroke="none">груз</text></svg>`,
+  2: `<svg class="ill" width="320" height="120" viewBox="0 0 320 120" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 50 Q90 64 160 50 Q230 64 300 50" stroke-width="7" stroke-linecap="round"/><path d="M160 50 v58" stroke-width="5"/><path d="M20 54 l-10 18 h20z M300 54 l-10 18 h20z"/><text x="70" y="98" font-size="16" fill="currentColor" stroke="none">пролёт</text><text x="200" y="98" font-size="16" fill="currentColor" stroke="none">пролёт</text></svg>`,
+  3: `<svg class="ill" width="320" height="130" viewBox="0 0 320 130" fill="none" stroke="currentColor" stroke-width="3"><path d="M30 110 L60 30 L140 30 L110 110 Z"/><g fill="currentColor"><circle cx="30" cy="110" r="5"/><circle cx="60" cy="30" r="5"/><circle cx="140" cy="30" r="5"/><circle cx="110" cy="110" r="5"/></g><path d="M200 110 L250 30 L300 110 Z"/><g fill="currentColor"><circle cx="200" cy="110" r="5"/><circle cx="250" cy="30" r="5"/><circle cx="300" cy="110" r="5"/></g><text x="40" y="20" font-size="16" fill="currentColor" stroke="none">складывается</text><text x="215" y="20" font-size="16" fill="currentColor" stroke="none">держит</text></svg>`,
+  4: `<svg class="ill" width="340" height="110" viewBox="0 0 340 110" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 90 H320" stroke-width="6"/><path d="M20 90 L60 30 H280 L320 90 M60 30 V90 M100 30 V90 M140 30 V90 M180 30 V90 M220 30 V90 M260 30 V90 M280 30 V90 M60 30 L100 90 M100 30 L140 90 M140 30 L180 90 M220 30 L180 90 M260 30 L220 90 M280 30 L260 90"/></svg>`,
+};
+Object.assign(ILL, {
+  5: `<svg class="ill" width="320" height="130" viewBox="0 0 320 130" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 30 H300" stroke-width="7"/><path d="M20 30 L60 70 H260 L300 30 M60 30 V70 M100 30 V70 M140 30 V70 M180 30 V70 M220 30 V70 M260 30 V70 M60 30 L100 70 M100 30 L140 70 M180 70 L220 30 M220 70 L260 30"/><path d="M20 10 V120 M300 10 V120 M20 120 H300" stroke-width="3"/><g stroke-width="1.6"><circle cx="90" cy="9" r="3"/><path d="M90 12 v10 m-5 6 l5 -6 l5 6"/><circle cx="160" cy="9" r="3"/><path d="M160 12 v10 m-5 6 l5 -6 l5 6"/><circle cx="230" cy="9" r="3"/><path d="M230 12 v10 m-5 6 l5 -6 l5 6"/></g></svg>`,
+  6: `<svg class="ill" width="320" height="120" viewBox="0 0 320 120" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 30 H300" stroke-width="6"/><path d="M30 105 Q160 -10 290 105" stroke-width="14" stroke-dasharray="18 3"/><path d="M75 30 V70 M110 30 V48 M160 30 V40 M210 30 V48 M245 30 V70" stroke-width="4"/><path d="M30 105 l-10 10 M290 105 l10 10" /></svg>`,
+  7: `<svg class="ill" width="260" height="130" viewBox="0 0 260 130" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10 V125" stroke-width="10"/><path d="M25 70 H220" stroke-width="6"/><path d="M25 25 L220 70" stroke-width="1.5"/><path d="M25 110 L130 70" stroke-width="4" stroke-dasharray="2 5"/><text x="120" y="38" font-size="15" fill="currentColor" stroke="none">трос тянет</text><text x="100" y="118" font-size="15" fill="currentColor" stroke="none">или подкос давит</text></svg>`,
+  8: `<svg class="ill" width="340" height="130" viewBox="0 0 340 130" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 100 H320" stroke-width="6"/><path d="M40 15 V100 M300 15 V100" stroke-width="7"/><path d="M40 15 Q170 140 300 15" stroke-width="2"/><path d="M70 47 V100 M100 68 V100 M130 81 V100 M170 86 V100 M210 81 V100 M240 68 V100 M270 47 V100" stroke-width="1"/></svg>`,
+  9: `<svg class="ill" width="320" height="110" viewBox="0 0 320 110" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 60 H310" stroke-width="6"/><path d="M10 60 L40 20 H120 L150 60 M40 20 L70 60 L100 20 L120 60 M160 60 V100" /><path d="M170 100 Q235 15 300 100" stroke-width="8" stroke-dasharray="12 3"/><path d="M195 60 V75 M235 60 V50 M275 60 V75" stroke-width="3"/></svg>`,
+});
+const LIFE = {
+  1: `<svg class="ill" width="280" height="90" viewBox="0 0 280 90" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 50 H270" stroke-width="5"/><path d="M40 50 V25 H240 V50 M80 25 V50 M120 25 V50 M160 25 V50 M200 25 V50" stroke-width="1.5"/><path d="M10 50 V85 M270 50 V85"/><path d="M30 75 q15 -6 30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0" stroke-width="1.2"/></svg>`,
+  2: `<svg class="ill" width="320" height="90" viewBox="0 0 320 90" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 30 H315" stroke-width="5"/><path d="M60 32 V85 M120 32 V85 M180 32 V85 M240 32 V85" stroke-width="9"/><path d="M5 60 q10 -5 20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0" stroke-width="1"/></svg>`,
+  3: `<svg class="ill" width="160" height="140" viewBox="0 0 160 140" fill="none" stroke="currentColor" stroke-width="2"><path d="M50 135 L72 10 H88 L110 135 M58 90 H102 M63 60 H97 M68 32 H92 M50 135 L102 90 M110 135 L58 90 M58 90 L97 60 M102 90 L63 60 M63 60 L92 32 M97 60 L68 32 M20 32 H140 M20 32 L68 32 M140 32 L92 32"/></svg>`,
+  4: `<svg class="ill" width="320" height="100" viewBox="0 0 320 100" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 75 H310" stroke-width="5"/><path d="M10 75 L40 25 H280 L310 75 M40 25 L70 75 L100 25 L130 75 L160 25 L190 75 L220 25 L250 75 L280 25 M70 75 V25 M130 75 V25 M190 75 V25 M250 75 V25" stroke-width="1.6"/><rect x="90" y="52" width="60" height="20" rx="3"/><rect x="155" y="52" width="60" height="20" rx="3"/></svg>`,
+  5: `<svg class="ill" width="300" height="110" viewBox="0 0 300 110" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 105 V20 M280 105 V20 M10 105 H290" stroke-width="4"/><path d="M20 20 H280" stroke-width="4"/><path d="M20 20 L50 40 H250 L280 20 M50 40 L80 20 L110 40 L140 20 L170 40 L200 20 L230 40 L250 20" stroke-width="1.5"/><circle cx="240" cy="75" r="9"/><path d="M262 60 v15 m-6 0 h12" /><path d="M262 45 v15" stroke-width="1"/></svg>`,
+  6: `<svg class="ill" width="320" height="110" viewBox="0 0 320 110" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 10 H315 M5 22 H315 M5 55 H315"/><path d="M10 55 a20 20 0 0 1 40 0 M60 55 a20 20 0 0 1 40 0 M110 55 a20 20 0 0 1 40 0 M160 55 a20 20 0 0 1 40 0 M210 55 a20 20 0 0 1 40 0 M260 55 a20 20 0 0 1 40 0 M5 105 a25 25 0 0 1 50 0 M80 105 a35 50 0 0 1 70 0 M170 105 a35 50 0 0 1 70 0 M260 105 a25 25 0 0 1 50 0"/><path d="M15 22 V55 M45 22 V55"/></svg>`,
+  7: `<svg class="ill" width="200" height="140" viewBox="0 0 200 140" fill="none" stroke="currentColor" stroke-width="2"><rect x="30" y="5" width="110" height="135"/><path d="M140 40 H180 V25 M140 90 H180 V75 M140 40 L180 25 M140 90 L180 75" stroke-width="1.5"/><path d="M140 40 H180 M140 90 H180" stroke-width="5"/><rect x="55" y="20" width="25" height="30"/><rect x="95" y="20" width="25" height="30"/><rect x="55" y="70" width="25" height="30"/><rect x="95" y="70" width="25" height="30"/></svg>`,
+  8: `<svg class="ill" width="340" height="120" viewBox="0 0 340 120" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 90 H335" stroke-width="5"/><path d="M80 10 V115 M260 10 V115" stroke-width="8"/><path d="M5 60 Q45 60 80 10 Q170 120 260 10 Q295 60 335 60"/><path d="M110 50 V90 M140 72 V90 M170 78 V90 M200 72 V90 M230 50 V90 M30 58 V90 M55 45 V90 M285 45 V90 M310 58 V90" stroke-width="1"/></svg>`,
+};
+function openIntro() {
+  const L = level();
+  $('#inTitle').textContent = `${L.id}. ${L.title}`;
+  $('#inIll').innerHTML = ILL[L.id] || '';
+  $('#inIdea').textContent = nb(L.idea);
+  $('#inTask').innerHTML = `<b>Задание.</b> ${nb(L.task)}${L.sandbox ? '' : ` Бюджет — ${L.budget} ₽.`}`;
+  $('#inTip').textContent = 'Подсказка: ' + L.tip;
+  $('#introDlg').showModal();
+}
+$('#inGo').onclick = () => $('#introDlg').close();
+$('#helpBtn').onclick = openIntro;
+$('#toolBuild').onclick = () => setTool('build');
+$('#toolDel').onclick = () => setTool('del');
+$('#undoBtn').onclick = undo;
+$('#clearBtn').onclick = () => {
+  if (!S.design.elements.length) return;
+  pushUndo(); S.design = freshDesign(level()); S.start = null; persistDesign(); updateStamp();
+  toast('Чертёж очищен. «Отменить» вернёт мост.');
+};
+$('#testBtn').onclick = enterTest;
+$('#backBtn').onclick = exitTest;
+$('#resEdit').onclick = () => { $('#resDlg').close(); exitTest(); };
+$('#resWatch').onclick = () => { $('#resDlg').close(); exitTest(); enterTest(); };
+$('#resNext').onclick = () => { $('#resDlg').close(); startLevel(S.li + 1); };
+$('#lvlBtn').onclick = () => {
+  const box = $('#lvlList'); box.innerHTML = '';
+  LEVELS.forEach((L, i) => {
+    const b = document.createElement('button');
+    b.innerHTML = `<span>${L.id}. ${L.title}</span><span class="s">${starsHTML(S.progress.stars[L.id])}</span>`;
+    if (i === S.li) b.setAttribute('aria-pressed', 'true');
+    b.onclick = () => { $('#lvlDlg').close(); startLevel(i); };
+    box.appendChild(b);
+  });
+  $('#lvlDlg').showModal();
+};
+$('#lvlClose').onclick = () => $('#lvlDlg').close();
+
+// ---------- рисование ----------
+function label(text, x, y, color, size = 15, align = 'center') {
+  ctx.save(); ctx.translate(x, y); ctx.transform(1, 0, -0.26, 1, 0, 0); // наклон как у чертёжного шрифта
+  ctx.font = `${size}px 'PT Sans Narrow', 'Arial Narrow', sans-serif`;
+  ctx.fillStyle = color; ctx.textAlign = align; ctx.textBaseline = 'middle';
+  ctx.fillText(text, 0, 0); ctx.restore();
+}
+function drawSheet() {
+  const { w, h, s } = S.view;
+  ctx.fillStyle = theme.sheet; ctx.fillRect(0, 0, w, h);
+  ctx.save(); ctx.beginPath(); ctx.rect(13, 13, w - 26, h - 26); ctx.clip();
+  const xA = Math.floor(wx(0)), xB = Math.ceil(wx(w)), yA = Math.floor(wy(h)), yB = Math.ceil(wy(0));
+  ctx.lineWidth = 1;
+  for (let x = xA; x <= xB; x += GRID) {
+    ctx.strokeStyle = Math.abs(x - Math.round(x)) < 1e-6 ? theme.gridMajor : theme.grid;
+    ctx.beginPath(); ctx.moveTo(Math.round(sx(x)) + 0.5, 0); ctx.lineTo(Math.round(sx(x)) + 0.5, h); ctx.stroke();
+  }
+  for (let y = yA; y <= yB; y += GRID) {
+    ctx.strokeStyle = Math.abs(y - Math.round(y)) < 1e-6 ? theme.gridMajor : theme.grid;
+    ctx.beginPath(); ctx.moveTo(0, Math.round(sy(y)) + 0.5); ctx.lineTo(w, Math.round(sy(y)) + 0.5); ctx.stroke();
+  }
+  ctx.restore();
+  // рамка листа
+  ctx.strokeStyle = theme.ink; ctx.lineWidth = 1; ctx.strokeRect(5.5, 5.5, w - 11, h - 11);
+  ctx.lineWidth = 2.5; ctx.strokeRect(12, 12, w - 24, h - 24);
+  // метки метров по верху
+  const L = level(), step = s > 45 ? 1 : 2;
+  for (let x = L.xL; x <= L.xR; x++) {
+    if ((x - L.xL) % step && x !== L.xR) continue;
+    label(x === L.xL ? '0' : `${x - L.xL} м`, sx(x), 26, theme.inkSoft, 13);
+  }
+}
+function hatch(path, spacing = 9) {
+  const { w, h } = S.view;
+  ctx.save(); path(); ctx.clip();
+  ctx.strokeStyle = theme.ground; ctx.lineWidth = 1; ctx.globalAlpha = 0.55;
+  ctx.beginPath();
+  for (let d = -h; d < w + h; d += spacing) { ctx.moveTo(d, h); ctx.lineTo(d + h, 0); }
+  ctx.stroke(); ctx.restore();
+}
+function drawTerrain() {
+  const L = level(), { w, h } = S.view;
+  const rx = x => Math.max(-20, Math.min(w + 20, sx(x))), ry = y => Math.max(-20, Math.min(h + 20, sy(y)));
+  // вода
+  if (L.water) {
+    const wt = L.water;
+    ctx.fillStyle = theme.water;
+    ctx.fillRect(sx(wt.x0), sy(wt.top), sx(wt.x1) - sx(wt.x0), h - sy(wt.top));
+    ctx.strokeStyle = theme.tension; ctx.globalAlpha = 0.5; ctx.lineWidth = 1.5; ctx.beginPath();
+    for (let x = wt.x0; x < wt.x1; x += 0.5) {
+      ctx.moveTo(sx(x), sy(wt.top)); ctx.quadraticCurveTo(sx(x + 0.25), sy(wt.top) - 4, sx(x + 0.5), sy(wt.top));
+    }
+    ctx.stroke(); ctx.globalAlpha = 1;
+  }
+  // запретные зоны
+  for (const r of L.forbid || []) {
+    const x0 = rx(r.x0), x1 = rx(r.x1), y0 = ry(r.y1), y1 = ry(r.y0);
+    ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, x1 - x0, y1 - y0); ctx.clip();
+    ctx.strokeStyle = theme.danger; ctx.globalAlpha = 0.14; ctx.lineWidth = 6; ctx.beginPath();
+    for (let d = -h; d < w + h; d += 22) { ctx.moveTo(d, 0); ctx.lineTo(d + h, h); }
+    ctx.stroke(); ctx.restore();
+    ctx.strokeStyle = theme.danger; ctx.globalAlpha = 0.5; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+    ctx.strokeRect(x0 + 0.5, y0 + 0.5, x1 - x0, y1 - y0); ctx.setLineDash([]); ctx.globalAlpha = 1;
+    const lx = (Math.max(x0, sx(L.view.x0)) + Math.min(x1, sx(L.view.x1))) / 2;
+    label(r.label, lx, r.y0 >= 0 ? Math.max(y0, 13) + 40 : (y0 + y1) / 2, theme.danger, 15);
+  }
+  // земля, стены, опоры
+  for (const r of L.solids) {
+    const x0 = rx(r.x0), x1 = rx(r.x1), y0 = ry(r.y1), y1 = ry(r.y0);
+    const path = () => { ctx.beginPath(); ctx.rect(x0, y0, x1 - x0, y1 - y0); };
+    ctx.fillStyle = theme.sheet; path(); ctx.fill();
+    hatch(path, r.fine ? 6 : 9);
+    ctx.strokeStyle = theme.ink; ctx.lineWidth = 2; path(); ctx.stroke();
+  }
+}
+function anchorRot(a) {
+  for (const r of level().solids) {
+    if (a.y > r.y0 + 1e-6 && a.y < r.y1 - 1e-6) {
+      if (Math.abs(a.x - r.x1) < 1e-6) return Math.PI / 2;   // стена слева
+      if (Math.abs(a.x - r.x0) < 1e-6) return -Math.PI / 2;  // стена справа
+    }
+  }
+  return 0;
+}
+function drawAnchor(a) {
+  const r = Math.max(9, S.view.s * 0.28);
+  ctx.save(); ctx.translate(sx(a.x), sy(a.y)); ctx.rotate(anchorRot(a));
+  ctx.strokeStyle = theme.ink; ctx.fillStyle = theme.sheet; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-r * 0.75, r); ctx.lineTo(r * 0.75, r); ctx.closePath(); ctx.fill(); ctx.stroke();
+  if (a.roller) {
+    ctx.beginPath(); ctx.arc(-r * 0.4, r + 4, 3.5, 0, 7); ctx.arc(r * 0.4, r + 4, 3.5, 0, 7); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-r, r + 8.5); ctx.lineTo(r, r + 8.5); ctx.stroke();
+  } else {
+    ctx.beginPath(); ctx.moveTo(-r, r); ctx.lineTo(r, r); ctx.stroke();
+    for (let i = -r; i < r; i += 5) { ctx.beginPath(); ctx.moveTo(i, r + 6); ctx.lineTo(i + 5, r); ctx.stroke(); }
+  }
+  ctx.restore();
+}
+function beamStroke(x1, y1, x2, y2, mat, color) {
+  const m = MATERIALS[mat], wpx = Math.max(mat === 'rope' ? 2 : 4, m.thick * S.view.s);
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = color || theme[mat]; ctx.lineWidth = wpx;
+  ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+  if (!color && mat === 'stone') {
+    const L = Math.hypot(x2 - x1, y2 - y1), n = Math.max(1, Math.round(L / (0.5 * S.view.s)));
+    const px = -(y2 - y1) / (L || 1) * wpx / 2, py = (x2 - x1) / (L || 1) * wpx / 2;
+    ctx.strokeStyle = theme.sheet; ctx.lineWidth = 1.5; ctx.lineCap = 'butt'; ctx.beginPath();
+    for (let k = 1; k < n; k++) { const t = k / n, cx = x1 + (x2 - x1) * t, cy = y1 + (y2 - y1) * t; ctx.moveTo(cx - px, cy - py); ctx.lineTo(cx + px, cy + py); }
+    ctx.stroke();
+  }
+  if (!color && mat === 'road') {
+    ctx.strokeStyle = theme.sheet; ctx.lineWidth = 1.2; ctx.setLineDash([6, 6]);
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); ctx.setLineDash([]);
+  }
+}
+function drawNode(x, y, hl) {
+  const r = Math.max(4, S.view.s * 0.09);
+  ctx.fillStyle = theme.sheet; ctx.strokeStyle = hl || theme.ink; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); ctx.stroke();
+}
+function drawDesign() {
+  const D = S.design;
+  const hovEl = S.hover && S.hover.del ? elementAt(S.hover.x, S.hover.y) : null;
+  for (const e of D.elements) {
+    const a = nodeById(e.a), b = nodeById(e.b);
+    beamStroke(sx(a.x), sy(a.y), sx(b.x), sy(b.y), e.mat, e === hovEl ? theme.danger : null);
+  }
+  for (const n of D.nodes) if (!n.anchor) drawNode(sx(n.x), sy(n.y));
+  for (const a of D.nodes) if (a.anchor) { drawAnchor(a); drawNode(sx(a.x), sy(a.y)); }
+  // предпросмотр
+  if (S.tool === 'build' && S.hover && !S.hover.del) {
+    const p = S.hover, ok = validPoint(p);
+    if (S.start) {
+      const len = Math.hypot(p.x - S.start.x, p.y - S.start.y), good = ok && len <= maxLenOf(S.mat) + 1e-6;
+      ctx.globalAlpha = 0.55;
+      beamStroke(sx(S.start.x), sy(S.start.y), sx(p.x), sy(p.y), S.mat, good ? null : theme.danger);
+      ctx.globalAlpha = 1;
+      if (len > 0.01) label(`${fmt(len)} м`, (sx(S.start.x) + sx(p.x)) / 2 + 14, (sy(S.start.y) + sy(p.y)) / 2 - 16, good ? theme.ink : theme.danger, 17, 'left');
+      drawNode(sx(S.start.x), sy(S.start.y), theme.tension);
+    }
+    ctx.strokeStyle = ok ? theme.tension : theme.danger; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(sx(p.x), sy(p.y), Math.max(7, S.view.s * 0.14), 0, 7); ctx.stroke();
+  }
+  if (!D.elements.length && !S.start) {
+    const L = level();
+    label('Нажми на опору, чтобы начать', sx((L.xL + L.xR) / 2), sy(L.id === 7 ? -3.4 : L.forbid ? -1.4 : 1.6), theme.inkSoft, 19);
+  }
+}
+
+function mixColor(c1, c2, t) {
+  const p = c => { c = c.replace('#', ''); return [0, 2, 4].map(i => parseInt(c.substr(i, 2), 16)); };
+  const a = p(c1), b = p(c2);
+  return `rgb(${a.map((v, i) => Math.round(v + (b[i] - v) * t)).join(',')})`;
+}
+function drawWorld() {
+  const T = S.test, W = T.W, P = W.P, now = T.t;
+  const broken = !!T.firstBreak || T.car.falling;
+  // увеличение прогиба ограничиваем, чтобы большой прогиб не превращался в «кашу» на экране
+  let md = 0; for (let i = 0; i < W.n; i++) md = Math.max(md, Math.abs(P.y[i] - P.y0[i]), Math.abs(P.x[i] - P.x0[i]));
+  const ex = broken ? 1 : Math.max(1, Math.min(S.exag, 0.6 / Math.max(md, 1e-6)));
+  const exTxt = S.exag === 1 ? '×1' : Math.round(ex) < S.exag ? `×${Math.round(ex)} (прогиб и так большой)` : '×' + S.exag;
+  if ($('#exagVal').textContent !== exTxt) $('#exagVal').textContent = exTxt;
+  const X = i => sx(P.x0[i] + (P.x[i] - P.x0[i]) * ex), Y = i => sy(P.y0[i] + (P.y[i] - P.y0[i]) * ex);
+  // пунктир — мост до нагрузки
+  ctx.strokeStyle = theme.inkSoft; ctx.lineWidth = 1.2; ctx.setLineDash([5, 5]);
+  for (const el of W.els) { const a = el.ids[0], b = el.ids[el.ids.length - 1]; ctx.beginPath(); ctx.moveTo(sx(P.x0[a]), sy(P.y0[a])); ctx.lineTo(sx(P.x0[b]), sy(P.y0[b])); ctx.stroke(); }
+  ctx.setLineDash([]);
+  const pulse = 0.55 + 0.45 * Math.sin(performance.now() / 70);
+  for (const el of W.els) {
+    const base = theme[el.src.mat], m = el.mat;
+    const wpx = Math.max(el.src.mat === 'rope' ? 3 : 4, m.thick * S.view.s);
+    ctx.lineCap = el.src.mat === 'stone' ? 'butt' : 'round';
+    for (const c of el.dist) {
+      if (!c.alive) continue;
+      const x1 = X(c.i), y1 = Y(c.i), x2 = X(c.j), y2 = Y(c.j);
+      let col = base;
+      if (!el.broken) {
+        const t = Math.min(1, Math.max(c.ra * 1.3, Math.min(0.65, Math.abs(c.T) / (m.tensionOnly ? 8000 : 50000))));
+        col = mixColor(base, c.T >= 0 ? theme.tension : theme.compress, t);
+      }
+      const total = c.ra + c.rb;
+      ctx.globalAlpha = !el.broken && total > 0.85 ? pulse : (el.broken ? 0.6 : 1);
+      ctx.lineCap = el.src.mat === 'stone' ? 'butt' : 'round'; ctx.strokeStyle = col; ctx.lineWidth = wpx;
+      ctx.beginPath(); ctx.moveTo(x1, y1);
+      if (el.mat.tensionOnly && c.T <= 0) ctx.quadraticCurveTo((x1 + x2) / 2, (y1 + y2) / 2 + 8, x2, y2); else ctx.lineTo(x2, y2);
+      ctx.stroke();
+      // полоски изгиба: сжатая сторона красная, растянутая синяя
+      if (!el.broken && c.rb > 0.03) {
+        const len = Math.hypot(x2 - x1, y2 - y1) || 1;
+        let nx = (y2 - y1) / len, ny = -(x2 - x1) / len; // левая нормаль в мировых осях = (-dy, dx); на экране y перевёрнут
+        const side = c.Ms > 0 ? 1 : -1, off = wpx / 2 + 1.5, a = Math.min(1, 0.3 + c.rb * 1.5);
+        ctx.lineCap = 'butt'; ctx.lineWidth = 3;
+        ctx.globalAlpha = (total > 0.85 ? pulse : 1) * a;
+        ctx.strokeStyle = theme.compress;
+        ctx.beginPath(); ctx.moveTo(x1 + nx * off * side, y1 + ny * off * side); ctx.lineTo(x2 + nx * off * side, y2 + ny * off * side); ctx.stroke();
+        ctx.strokeStyle = theme.tension;
+        ctx.beginPath(); ctx.moveTo(x1 - nx * off * side, y1 - ny * off * side); ctx.lineTo(x2 - nx * off * side, y2 - ny * off * side); ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+    }
+  }
+  // узлы
+  const nodeIds = new Set(); for (const el of W.els) { nodeIds.add(el.ids[0]); nodeIds.add(el.ids[el.ids.length - 1]); }
+  for (const a of level().anchors) drawAnchor(a);
+  for (const i of nodeIds) drawNode(X(i), Y(i));
+  // место первой поломки
+  if (T.firstBreak) {
+    const b = T.firstBreak.brokenAt, r = 18 + 6 * Math.sin(performance.now() / 150);
+    ctx.strokeStyle = theme.danger; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(sx(b.x), sy(b.y), r, 0, 7); ctx.stroke();
+  }
+  if (T.people) drawCrowd(T, ex); else drawCar(T, ex);
+}
+function drawCrowd(T, ex) {
+  const s = S.view.s;
+  ctx.strokeStyle = theme.ink; ctx.lineWidth = 2; ctx.lineCap = 'round';
+  let any = false;
+  for (const p of T.people) {
+    if (T.t < p.at) continue;
+    any = true;
+    const y = p.y0 + (p.y - p.y0) * (p.falling ? 1 : ex), x = sx(p.x), b = sy(y) - S.view.s * 0.13;
+    const drop = Math.max(0, 1 - (T.t - p.at) / 0.25) * 0.6 * s;
+    const H = 1.7 * s, by = b - drop;
+    ctx.beginPath();
+    ctx.moveTo(x - 0.18 * s, by); ctx.lineTo(x, by - 0.8 * s); ctx.lineTo(x + 0.18 * s, by);
+    ctx.moveTo(x, by - 0.8 * s); ctx.lineTo(x, by - 1.38 * s);
+    ctx.moveTo(x - 0.25 * s, by - 1.0 * s); ctx.lineTo(x, by - 1.3 * s); ctx.lineTo(x + 0.25 * s, by - 1.0 * s);
+    ctx.stroke();
+    ctx.beginPath(); ctx.arc(x, by - 1.52 * s, 0.14 * s, 0, 7); ctx.stroke();
+  }
+  if (any) {
+    const L = T.load, n = T.people.filter(p => T.t >= p.at).length;
+    label(`${n} чел. × ${L.each} кг = ${tons(n * L.each)}`, sx((L.x0 + L.x1) / 2), sy(0) - 2.1 * s, theme.ink, 17);
+  }
+}
+
+function drawCar(T, ex) {
+  const car = T.car, s = S.view.s, ld = T.load;
+  const yr = car.yr0 + (car.yr - car.yr0) * ex, yf = car.yf0 + (car.yf - car.yf0) * ex;
+  const ang = car.falling ? car.ang : Math.atan2(yf - yr, ld.axle);
+  const wr = ld.kind === 'truck' ? 0.42 : ld.kind === 'cart' ? 0.24 : 0.32;
+  ctx.save();
+  ctx.translate(sx(car.xr), sy(yr)); ctx.rotate(-ang); ctx.scale(s, -s);
+  ctx.lineWidth = 2 / s; ctx.strokeStyle = theme.ink; ctx.fillStyle = theme.sheet; ctx.lineJoin = 'round';
+  const A = ld.axle, R = (x, y, w, h) => { ctx.beginPath(); ctx.rect(x, y, w, h); ctx.fill(); ctx.stroke(); };
+  if (ld.kind === 'cart') {
+    R(-0.4, wr + 0.05, A + 0.8, 0.14);
+    ctx.fillStyle = theme.compress; ctx.globalAlpha = 0.85;
+    for (let r = 0; r < 3; r++) for (let c = 0; c < 4; c++) { const o = r % 2 ? 0.2 : 0; if (c * 0.45 + o < A + 0.5) R(-0.3 + c * 0.45 + o, wr + 0.19 + r * 0.2, 0.42, 0.18); }
+    ctx.globalAlpha = 1; ctx.fillStyle = theme.sheet;
+    ctx.beginPath(); ctx.moveTo(A + 0.4, wr + 0.12); ctx.lineTo(A + 0.95, wr + 0.6); ctx.stroke();
+  } else if (ld.kind === 'car') {
+    ctx.beginPath(); ctx.moveTo(-0.7, wr); ctx.lineTo(A + 0.8, wr); ctx.lineTo(A + 0.8, wr + 0.45); ctx.lineTo(A + 0.2, wr + 0.55);
+    ctx.lineTo(A - 0.3, wr + 1.0); ctx.lineTo(0.2, wr + 1.0); ctx.lineTo(-0.3, wr + 0.55); ctx.lineTo(-0.7, wr + 0.5); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(A / 2, wr + 0.55); ctx.lineTo(A / 2, wr + 0.95); ctx.stroke();
+  } else {
+    R(-0.9, wr + 0.1, A + 0.2, 1.5);
+    ctx.beginPath(); ctx.moveTo(A - 0.6, wr + 0.1); ctx.lineTo(A + 1.0, wr + 0.1); ctx.lineTo(A + 1.0, wr + 0.8); ctx.lineTo(A + 0.6, wr + 1.25);
+    ctx.lineTo(A - 0.6, wr + 1.25); ctx.closePath(); ctx.fill(); ctx.stroke();
+  }
+  for (const x of [0, A]) { ctx.fillStyle = theme.ink; ctx.beginPath(); ctx.arc(x, wr, wr, 0, 7); ctx.fill(); ctx.fillStyle = theme.sheet; ctx.beginPath(); ctx.arc(x, wr, wr * 0.4, 0, 7); ctx.fill(); }
+  ctx.restore();
+  const mid = sx(car.xr + Math.cos(ang) * A / 2), top = sy(yr + Math.sin(ang) * A / 2 + (ld.kind === 'truck' ? 2.4 : ld.kind === 'cart' ? 1.3 : 1.7));
+  label(tons(ld.mass), mid, top, theme.ink, 17);
+}
+
+function frame() {
+  if (S.view) {
+    if (S.mode === 'test') advanceTest();
+    ctx.clearRect(0, 0, S.view.w, S.view.h);
+    drawSheet();
+    ctx.save(); ctx.beginPath(); ctx.rect(13, 13, S.view.w - 26, S.view.h - 26); ctx.clip();
+    drawTerrain();
+    if (S.mode === 'build') drawDesign(); else if (S.test) drawWorld();
+    ctx.restore();
+  }
+  requestAnimationFrame(frame);
+}
+
+// ---------- запуск ----------
+load();
+startLevel(0, true);
+if (document.fonts) document.fonts.ready.then(resize);
+new ResizeObserver(resize).observe($('#stage'));
+requestAnimationFrame(frame);
+
+</script>
+</body>
+</html>
